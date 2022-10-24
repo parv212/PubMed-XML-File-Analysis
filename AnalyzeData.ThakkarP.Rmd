@@ -1,0 +1,51 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Report
+
+## Importing Libraries
+
+```{r}
+library(RMySQL)
+library(DBI)
+library(knitr)
+library(stringr)
+library(dplyr)
+
+db_user <- 'admin'
+db_password <- 'khoury5200'
+db_name <- 'practicum2'
+db_host <- 'practicum2.clwtsa2zfujt.us-east-2.rds.amazonaws.com'
+db_port <- 3306
+
+mydb <-  dbConnect(RMySQL::MySQL(), user = db_user, password = db_password,
+                   dbname = db_name, host = db_host, port = db_port)
+```
+
+## Query 1
+
+```{sql connection=mydb}
+select authorID, CONCAT(LastName, " ", ForeName, " ", Initial) as Name, Num_of_article
+from Author_Fact
+order by Num_of_article DESC
+limit 10
+```
+
+## Query 2
+
+```{sql connection=mydb}
+select a.Title, a.Year, a.Total_article 
+from (select Title, Year, 
+        max(num_of_article_year) as Total_article
+        from Journal_Fact
+        group by Title, Year
+        order by Total_article DESC) a
+group by a.Year
+order by a.Year
+```
+
+```{r}
+dbDisconnect(mydb)
+```
